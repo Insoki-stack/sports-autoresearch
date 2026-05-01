@@ -193,8 +193,11 @@ def fetch_sport_odds(sport_key):
                                 model_prob, edge = get_soccer_prediction(team_name, price)
                             elif sport_key == 'nhl':
                                 model_prob, edge = get_nhl_prediction(team_name, price)
+                            elif sport_key == 'nba':
+                                model_prob, edge = get_nba_prediction(team_name, price)
                             else:
-                                model_prob, edge = 0.5, 0.0
+                                # Default to MLB edge for other sports
+                                model_prob, edge = get_mlb_prediction(team_name, price)
                             
                             prediction = {
                                 'away_team': away_team,
@@ -233,6 +236,17 @@ def main():
     print("="*60)
     
     fetch_mlb_odds()
+    
+    for sport_key in SPORTS_CONFIG.keys():
+        if sport_key != 'mlb':
+            fetch_sport_odds(sport_key)
+    
+    print("\n" + "="*60)
+    print("Additional Sports Odds Fetch Complete!")
+    print("="*60)
+
+if __name__ == "__main__":
+    main()
     
     for sport_key in SPORTS_CONFIG.keys():
         if sport_key != 'mlb':
