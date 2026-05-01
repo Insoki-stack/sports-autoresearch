@@ -10,7 +10,7 @@ from datetime import datetime
 import time
 
 # BALLDONTLIE API configuration
-BDL_API_KEY = "52345b0b-d723-4ee4-a137-8da2f92e3cdc"
+BDL_API_KEY = "8176ed786b61d3673a37ad9ee9a920f5"
 BDL_BASE_URL = "https://api.balldontlie.io"
 
 CACHE_DIR = Path.home() / ".cache" / "sports-autoresearch"
@@ -22,7 +22,8 @@ def fetch_nba_games(season=2024):
     headers = {"Authorization": f"Bearer {BDL_API_KEY}"}
     params = {
         "season": season,
-        "per_page": 100
+        "per_page": 100,
+        "page": 1
     }
     
     try:
@@ -33,7 +34,7 @@ def fetch_nba_games(season=2024):
             print(f"Fetched {len(games)} NBA games for {season}")
             return games
         else:
-            print(f"Error: {response.status_code}")
+            print(f"Error: {response.status_code} - {response.text}")
             return None
     except Exception as e:
         print(f"Error fetching NBA data: {e}")
@@ -113,22 +114,22 @@ def main():
         if nba_games:
             save_sport_data("nba", nba_games)
         
-        # Add delay5to avoid rate limiting
-        time.sleep(2)
+        # Add delay to avoid rate limiting
+        time.sleep(5)
         
         # NHL
         nhl_games = fetch_nhl_games(season)
         if nhl_games:
             save_sport_data("nhl", nhl_games)
         
-        time.sleep(2)
+        time.sleep(5)
         
         # Soccer
         soccer_games = fetch_soccer_games(season=season)
         if soccer_games:
             save_sport_data("soccer", soccer_games)
         
-        time.sleep(2)
+        time.sleep(5)
 
 if __name__ == "__main__":
     main()
