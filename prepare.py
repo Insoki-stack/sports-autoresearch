@@ -70,9 +70,15 @@ METRICS = {
 def load_historical_data(sport: str) -> pd.DataFrame:
     """
     Load historical data for a sport from cache.
-    Priority: engineered features > processed data > full data > raw data.
+    Priority: features with injuries > engineered features > processed data > full data > raw data.
     """
-    # Try engineered features first (pre-game features)
+    # Try features with injuries first
+    features_with_injuries = CACHE_DIR / f"{sport}_features_with_injuries.csv"
+    if features_with_injuries.exists():
+        print(f"Loading features with injuries for {sport}")
+        return pd.read_csv(features_with_injuries)
+    
+    # Try engineered features (pre-game features)
     features_file = CACHE_DIR / f"{sport}_features.csv"
     if features_file.exists():
         print(f"Loading engineered features for {sport}")
