@@ -5,20 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sports Autoresearch Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body class="bg-gray-900 text-white min-h-screen">
     <div class="container mx-auto px-4 py-8">
         <!-- Header -->
         <header class="mb-8">
-            <h1 class="text-3xl md:text-4xl font-bold text-center mb-2">🏀 Sports Autoresearch Dashboard</h1>
+            <h1 class="text-3xl md:text-4xl font-bold text-center mb-2">⚾ Sports Autoresearch Dashboard</h1>
             <p class="text-gray-400 text-center">AI-Powered Sports Betting Predictions</p>
             <p class="text-sm text-gray-500 text-center mt-2" id="last-updated">Last updated: Loading...</p>
         </header>
 
         <!-- Sport Selector -->
         <div class="flex flex-wrap gap-2 justify-center mb-6">
-            <button onclick="loadSport('nba')" class="sport-btn bg-orange-600 hover:bg-orange-700 px-4 py-2 rounded-lg font-semibold transition active" data-sport="nba">🏀 NBA</button>
+            <button onclick="loadSport('mlb')" class="sport-btn bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg font-semibold transition ring-2 ring-white" data-sport="mlb">⚾ MLB</button>
+            <button onclick="loadSport('nba')" class="sport-btn bg-orange-600 hover:bg-orange-700 px-4 py-2 rounded-lg font-semibold transition" data-sport="nba">🏀 NBA</button>
             <button onclick="loadSport('nfl')" class="sport-btn bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg font-semibold transition" data-sport="nfl">🏈 NFL</button>
             <button onclick="loadSport('nhl')" class="sport-btn bg-cyan-600 hover:bg-cyan-700 px-4 py-2 rounded-lg font-semibold transition" data-sport="nhl">🏒 NHL</button>
             <button onclick="loadSport('soccer')" class="sport-btn bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg font-semibold transition" data-sport="soccer">⚽ Soccer</button>
@@ -109,46 +109,53 @@
                             <th class="text-left py-2 px-3">Bookmaker</th>
                         </tr>
                     </thead>
-        let currentSport = 'nb ';
-        
-        a           <tbody id="predictions-table">
+                    <tbody id="predictions-table">
                         <tr><td colspan="6" class="text-center py-4 text-gray-400">Loading...</td></tr>
-                le</utl'/p/predicions';
-               i (currnSport !== all') {
-                    url = `/${currentSport}`
-                }
-                
-                </tablreseons = awat fetch(url);
-                t data
+                    </tbody>
+                </table>
             </div>
-        </div>aa
-    </div>aa
+        </div>
+    </div>
 
     <script>
-                
-                // Handle different response formats
-                const predictions = currentSport === 'all' ? data.nba || [] : data;
-                
-           asyncif (predictionsf&&upredictions.length > 0) {nction loadPredictions() {
-            try     {
-                    const response = await fetch('/api/predictions');
-                    const predictions = await response.json();
-                    
-                if (    predictions.error) {
-                  else {
-                    do ument.getElementById('total-g mes'). extContent = '0';
-                    do ument.getElementById('positive-edges').textContent = '0';
-                    document.getElementById('best-bets').innerHTML = '<p class="text-gray-400">No predictions available for t is sport</p>';
+        let currentSport = 'mlb';
+        
+        async function loadPredictions() {
+            try {
+                let url = '/api/predictions';
+                if (currentSport !== 'all') {
+                    url = `/api/predictions/${currentSport}`;
                 }
-            } catch console.error(predictions.error);
+                
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (data.error) {
+                    console.error(data.error);
                     return;
-             
+                }
+                
+                const predictions = currentSport === 'all' ? (data.nba || []) : data;
+                
+                if (predictions && predictions.length > 0) {
+                    updateStats(predictions);
+                    updateBestBets(predictions);
+                    updateTable(predictions);
+                    document.getElementById('last-updated').textContent = 
+                        'Last updated: ' + new Date().toLocaleString();
+                } else {
+                    document.getElementById('total-games').textContent = '0';
+                    document.getElementById('positive-edges').textContent = '0';
+                    document.getElementById('best-bets').innerHTML = '<p class="text-gray-400">No predictions available for this sport</p>';
+                }
+            } catch (error) {
+                console.error('Error loading predictions:', error);
+            }
         }
 
         function loadSport(sport) {
             currentSport = sport;
             
-            // Update button styles
             document.querySelectorAll('.sport-btn').forEach(btn => {
                 btn.classList.remove('ring-2', 'ring-white');
                 if (btn.dataset.sport === sport) {
@@ -156,21 +163,11 @@
                 }
             });
             
-            loadPredictions();   }
-                
-                updateStats(predictions);
-                updateBestBets(predictions);
-                updateTable(predictions);
-                document.getElementById('last-updated').textContent = 
-                    'Last updated: ' + new Date().toLocaleString();
-            } catch (error) {
-                console.error('Error loading predictions:', error);
-            }
+            loadPredictions();
         }
 
         function updateBetRecommendations() {
             const bankroll = parseFloat(document.getElementById('bankroll').value) || 1000;
-            
             const conservative = (bankroll * 0.01).toFixed(2);
             const moderate = (bankroll * 0.025).toFixed(2);
             const aggressive = (bankroll * 0.05).toFixed(2);
@@ -208,8 +205,8 @@
             container.innerHTML = bestBets.map(bet => `
                 <div class="bg-gray-700 rounded p-3 flex justify-between items-center">
                     <div>
-                        <p class="font-semibold">${bet.away_team} @ ${bet.home_team}</p>
-                        <p class="text-sm text-gray-400">${bet.team}</p>
+                        <p class="font-semibold">${bet.away_team || 'Away'} @ ${bet.home_team || 'Home'}</p>
+                        <p class="text-sm text-gray-400">${bet.team || 'Team'}</p>
                     </div>
                     <div class="text-right">
                         <p class="font-bold text-green-400">${bet.moneyline > 0 ? '+' : ''}${bet.moneyline}</p>
@@ -225,10 +222,10 @@
             tbody.innerHTML = predictions.slice(0, 20).map(p => `
                 <tr class="border-b border-gray-700 hover:bg-gray-700">
                     <td class="py-2 px-3">
-                        <p class="font-medium">${p.away_team}</p>
-                        <p class="text-xs text-gray-400">@ ${p.home_team}</p>
+                        <p class="font-medium">${p.away_team || 'Away'}</p>
+                        <p class="text-xs text-gray-400">@ ${p.home_team || 'Home'}</p>
                     </td>
-                    <td class="py-2 px-3">${p.team}</td>
+                    <td class="py-2 px-3">${p.team || 'Team'}</td>
                     <td class="py-2 px-3 ${p.moneyline > 0 ? 'text-green-400' : 'text-red-400'}">
                         ${p.moneyline > 0 ? '+' : ''}${p.moneyline}
                     </td>
@@ -236,7 +233,7 @@
                     <td class="py-2 px-3 ${p.edge_vs_vegas > 0 ? 'text-green-400' : 'text-red-400'}">
                         ${(p.edge_vs_vegas * 100).toFixed(2)}%
                     </td>
-                    <td class="py-2 px-3 text-xs text-gray-400">${p.bookmaker}</td>
+                    <td class="py-2 px-3 text-xs text-gray-400">${p.bookmaker || 'Unknown'}</td>
                 </tr>
             `).join('');
         }
@@ -286,10 +283,7 @@
             btn.textContent = '🎓 Train Models';
         }
 
-        // Load predictions on page load
         loadPredictions();
-        
-        // Auto-refresh every 5 minutes
         setInterval(loadPredictions, 300000);
     </script>
 </body>

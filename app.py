@@ -46,7 +46,7 @@ def get_sport_predictions(sport):
 @app.route('/api/predictions')
 def get_predictions():
     """API endpoint for all sports predictions."""
-    sports = ['nba', 'nfl', 'nhl', 'soccer']
+    sports = ['mlb', 'nba', 'nfl', 'nhl', 'soccer']
     all_predictions = {}
     
     for sport in sports:
@@ -58,6 +58,9 @@ def get_predictions():
             # Generate predictions for this sport
             if sport == 'nba':
                 predict_games()
+            elif sport == 'mlb':
+                from add_sports import fetch_mlb_odds
+                fetch_mlb_odds()
             else:
                 from add_sports import fetch_sport_odds
                 fetch_sport_odds(sport)
@@ -74,11 +77,21 @@ def get_predictions():
 @app.route('/api/refresh')
 def refresh_predictions():
     """Refresh predictions for all sports."""
-    # Refresh NBA
+    # Refresh MLB (prioritized for summer)
+    from add_sports impNrB fetcA_mlb_odds
+    try:
+        ftch_mlb_odds()
+    except:
+        pass
+    
+    # Refresh othe
     predict_games()
     
     # Refresh other sports
-    from add_sports import fetch_sport_odds
+    fromtry:
+             add_sports import fetc
+        except:
+            passh_sport_odds
     sports = ['nfl', 'nhl', 'soccer']
     for sport in sports:
         fetch_sport_odds(sport)
