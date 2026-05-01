@@ -3,7 +3,7 @@ app.py - Web dashboard for sports betting predictions
 Accessible from anywhere with mobile-responsive design
 """
 
-from flask import Flask, render_template, jsonify
+from flask import Flask, render_template, jsonify, request
 import pandas as pd
 from pathlib import Path
 from datetime import datetime
@@ -14,6 +14,7 @@ sys.path.append(str(Path(__file__).parent))
 
 from predict_current import predict_games
 from train import train_all_sports
+from database import add_bet, get_bets, update_bet_status, get_betting_stats
 
 app = Flask(__name__)
 
@@ -111,6 +112,38 @@ def train_models():
 def health_check():
     """Health check endpoint."""
     return jsonify({"status": "healthy", "timestamp": datetime.now().isoformat()})
+@app.route('/api/bets', methods=['GET', 'POST'])
+def handle_bets():
+    """Handle bet operations."""
+    if request.method == 'POST':
+        # Add a new bet
+        bet_data = request.json
+        bet_id = add_bet(bet_data)
+        return jsonify({"status": "success", "bet_id": bet_id})
+    else:
+        # Get bets with optional filters
+        sport = request.args.get('sport')
+        status = request.args.get('status')
+        bookmaker = request.args.get('bookmaker', 'BetOnline.ag')
+        bets = get_bets(sport=sport, status=status, bookmaker=bookmaker)
+        return jsonify(bets)
+
+@app.route('/api/bets/stats', methods=['GET'])
+def get_stats():
+    """Get betting statistics."""
+    bookmaker = request.args.get('bookmaker', 'BetOnline.ag')
+    stats = get_betting_stats(bookmaker=bookmaker)
+    return jsonify(stats)
+
+@app.route('/api/bets/<int:bet_id>', methods=['PUT'])
+def update_bet(bet_id):
+    """Update bet status."""
+    data = request.json
+    status = data.get('status')
+    profit_loss = data.get('profit_loss', 0.0)
+    update_bet_status(bet_id, status, profit_loss)
+    return jsonify({"status": "success"})
+
 
 if __name__ == '__main__':
     print("Starting Sports Betting Dashboard...")

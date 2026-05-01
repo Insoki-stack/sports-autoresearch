@@ -33,6 +33,9 @@
             <button onclick="trainModels()" class="bg-green-600 hover:bg-green-700 px-6 py-3 rounded-lg font-semibold transition">
                 🎓 Train Models
             </button>
+            <button onclick="loadBetHistory()" class="bg-yellow-600 hover:bg-yellow-700 px-6 py-3 rounded-lg font-semibold transition">
+                📊 Load Bets
+            </button>
         </div>
 
         <!-- Bankroll Management -->
@@ -115,6 +118,74 @@
                 </div>
             </div>
             <p class="text-xs text-gray-500 mt-3 italic">Coming soon - Subscribe to unlock these features</p>
+        </div>
+
+        <!-- Bet Tracking -->
+        <div class="bg-gray-800 rounded-lg p-6 mb-8">
+            <h2 class="text-xl font-bold mb-4">📝 Log Your Bet (BetOnline.ag)</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+                <div>
+                    <label class="text-sm text-gray-400">Sport</label>
+                    <select id="bet-sport" class="w-full bg-gray-700 text-white px-3 py-2 rounded mt-1">
+                        <option value="mlb">MLB</option>
+                        <option value="nba">NBA</option>
+                        <option value="nhl">NHL</option>
+                        <option value="soccer">Soccer</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="text-sm text-gray-400">Team</label>
+                    <input type="text" id="bet-team" placeholder="e.g., Arizona Diamondbacks" class="w-full bg-gray-700 text-white px-3 py-2 rounded mt-1">
+                </div>
+                <div>
+                    <label class="text-sm text-gray-400">Amount ($)</label>
+                    <input type="number" id="bet-amount" placeholder="10" class="w-full bg-gray-700 text-white px-3 py-2 rounded mt-1">
+                </div>
+                <div>
+                    <label class="text-sm text-gray-400">Odds</label>
+                    <input type="number" id="bet-odds" placeholder="+118" class="w-full bg-gray-700 text-white px-3 py-2 rounded mt-1">
+                </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
+                <div>
+                    <label class="text-sm text-gray-400">Away Team</label>
+                    <input type="text" id="bet-away-team" placeholder="e.g., Arizona Diamondbacks" class="w-full bg-gray-700 text-white px-3 py-2 rounded mt-1">
+                </div>
+                <div>
+                    <label class="text-sm text-gray-400">Home Team</label>
+                    <input type="text" id="bet-home-team" placeholder="e.g., Chicago Cubs" class="w-full bg-gray-700 text-white px-3 py-2 rounded mt-1">
+                </div>
+                <div>
+                    <label class="text-sm text-gray-400">Edge (%)</label>
+                    <input type="number" id="bet-edge" placeholder="5" step="0.1" class="w-full bg-gray-700 text-white px-3 py-2 rounded mt-1">
+                </div>
+            </div>
+            <button onclick="logBet()" class="bg-green-600 hover:bg-green-700 px-6 py-2 rounded-lg font-semibold transition">
+                Log Bet
+            </button>
+        </div>
+
+        <!-- Bet History -->
+        <div class="bg-gray-800 rounded-lg p-6 mb-8">
+            <h2 class="text-xl font-bold mb-4">📊 Your Bet History (BetOnline.ag)</h2>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="border-b border-gray-700">
+                            <th class="text-left py-2 px-3">Sport</th>
+                            <th class="text-left py-2 px-3">Team</th>
+                            <th class="text-left py-2 px-3">Amount</th>
+                            <th class="text-left py-2 px-3">Odds</th>
+                            <th class="text-left py-2 px-3">Edge</th>
+                            <th class="text-left py-2 px-3">Status</th>
+                            <th class="text-left py-2 px-3">Profit/Loss</th>
+                        </tr>
+                    </thead>
+                    <tbody id="bet-history">
+                        <tr><td colspan="7" class="text-gray-400 py-4">No bets logged yet</td></tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
 
         <!-- Stats Overview -->
@@ -348,6 +419,77 @@
             
             btn.disabled = false;
             btn.textContent = '🎓 Train Models';
+        }
+
+        async function logBet() {
+            const betData = {
+                sport: document.getElementById('bet-sport').value,
+                selected_team: document.getElementById('bet-team').value,
+                amount_bet: parseFloat(document.getElementById('bet-amount').value),
+                odds: parseFloat(document.getElementById('bet-odds').value),
+                away_team: document.getElementById('bet-away-team').value,
+                home_team: document.getElementById('bet-home-team').value,
+                prediction_edge: parseFloat(document.getElementById('bet-edge').value) / 100
+            };
+
+            if (!betData.selected_team || !betData.amount_bet || !betData.odds) {
+                alert('Please fill in Team, Amount, and Odds');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/bets', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(betData)
+                });
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    alert('Bet logged successfully!');
+                    loadBetHistory();
+                } else {
+                    alert('Error logging bet');
+                }
+            } catch (error) {
+                alert('Error logging bet');
+            }
+        }
+
+        async function loadBetHistory() {
+            try {
+                const response = await fetch('/api/bets?bookmaker=BetOnline.ag');
+                const bets = await response.json();
+                
+                const tbody = document.getElementById('bet-history');
+                
+                if (bets.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="7" class="text-gray-400 py-4">No bets logged yet</td></tr>';
+                    return;
+                }
+                
+                tbody.innerHTML = bets.map(bet => `
+                    <tr class="border-b border-gray-700">
+                        <td class="py-2 px-3">${bet.sport.toUpperCase()}</td>
+                        <td class="py-2 px-3">${bet.selected_team}</td>
+                        <td class="py-2 px-3">$${bet.amount_bet}</td>
+                        <td class="py-2 px-3">${bet.odds > 0 ? '+' : ''}${bet.odds}</td>
+                        <td class="py-2 px-3">${(bet.prediction_edge * 100).toFixed(1)}%</td>
+                        <td class="py-2 px-3">
+                            <span class="px-2 py-1 rounded text-xs ${
+                                bet.status === 'won' ? 'bg-green-600' :
+                                bet.status === 'lost' ? 'bg-red-600' :
+                                bet.status === 'pending' ? 'bg-yellow-600' : 'bg-gray-600'
+                            }">${bet.status}</span>
+                        </td>
+                        <td class="py-2 px-3 ${bet.profit_loss >= 0 ? 'text-green-400' : 'text-red-400'}">
+                            $${bet.profit_loss.toFixed(2)}
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading bet history:', error);
+            }
         }
 
         loadPredictions();
