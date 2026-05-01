@@ -7,6 +7,7 @@ Everything is fair game: model architecture, features, hyperparameters, etc.
 import numpy as np
 import pandas as pd
 from typing import Tuple
+from pathlib import Path
 from xgboost import XGBClassifier, XGBRegressor
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
@@ -184,8 +185,28 @@ def train_sport_model(sport: str, time_budget: int = 300):
     # Evaluate
     predictions = model.predict(X_val)
     
-    # Mock vegas odds for evaluation (in real implementation, these come from data)
-    mock_odds = np.random.uniform(-200, 200, len(predictions))
+    # Load real odds if available (MLB, NBA), otherwise use mock odds
+    odds_file = Path.home() / ".cache" / "sports-autoresearch" / f"{sport}_odds.csv"
+    if odds_file.exists():
+        try:
+            odds_df = pd.read_csv(odds_file)
+            # Use average odds from bookmakers
+            if not odds_df.empty:
+                real_odds = odds_df.groupby('outcome')['price'].mean().values
+                # Pad or truncate to match predictions length
+                if len(real_odds) >= len(predictions):
+                    real_odds = real_odds[:len(predictions)]
+                else:
+                    real_odds = np.pad(real_odds, (0, len(predictions) - len(real_odds)), 'edge')
+                print(f"Using real odds from {len(odds_df)} entries")
+                mock_odds = real_odds
+            else:
+                mock_odds = np.random.uniform(-200, 200, len(predictions))
+        except Exception as e:
+            print(f"Error loading odds: {e}, using mock odds")
+            mock_odds = np.random.uniform(-200, 200, len(predictions))
+    else:
+        mock_odds = np.random.uniform(-200, 200, len(predictions))
     
     metrics = prepare.evaluate_predictions(
         (predictions > 0.5).astype(int),
