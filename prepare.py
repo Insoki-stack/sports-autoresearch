@@ -69,17 +69,28 @@ METRICS = {
 
 def load_historical_data(sport: str) -> pd.DataFrame:
     """
-    Load historical data for a sport from cache or download it.
-    This is a placeholder - actual implementation will fetch from APIs.
+    Load historical data for a sport from cache.
+    Try processed data, then full data, then raw data.
     """
-    cache_file = CACHE_DIR / f"{sport}_historical.csv"
+    # Try processed data first
+    processed_file = CACHE_DIR / f"{sport}_processed.csv"
+    if processed_file.exists():
+        print(f"Loading processed data for {sport}")
+        return pd.read_csv(processed_file)
     
+    # Try full data (from free internet sources)
+    full_file = CACHE_DIR / f"{sport}_historical_full.csv"
+    if full_file.exists():
+        print(f"Loading full data for {sport}")
+        return pd.read_csv(full_file)
+    
+    # Fall back to raw data
+    cache_file = CACHE_DIR / f"{sport}_historical.csv"
     if cache_file.exists():
         print(f"Loading cached data for {sport}")
         return pd.read_csv(cache_file)
     
-    print(f"No cached data found for {sport}. Please download historical data.")
-    print(f"Expected location: {cache_file}")
+    print(f"No cached data found for {sport}. Expected location: {cache_file}")
     return pd.DataFrame()
 
 def load_betting_odds(sport: str) -> pd.DataFrame:

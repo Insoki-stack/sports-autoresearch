@@ -99,10 +99,15 @@ class NBAModel(SportsBettingModel):
     
     def __init__(self):
         super().__init__("nba")
-        # NBA-specific hyperparameters
+        # NBA-specific hyperparameters - tuned for larger dataset
         self.params.update({
-            "n_estimators": 200,
-            "max_depth": 7,
+            "n_estimators": 300,
+            "max_depth": 8,
+            "learning_rate": 0.05,
+            "subsample": 0.8,
+            "colsample_bytree": 0.8,
+            "reg_alpha": 0.1,  # L1 regularization
+            "reg_lambda": 1.0,  # L2 regularization
         })
 
 class GolfModel(SportsBettingModel):
