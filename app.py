@@ -78,23 +78,23 @@ def get_predictions():
 def refresh_predictions():
     """Refresh predictions for all sports."""
     # Refresh MLB (prioritized for summer)
-    from add_sports impNrB fetcA_mlb_odds
+    from add_sports import fetch_mlb_odds
     try:
-        ftch_mlb_odds()
+        fetch_mlb_odds()
     except:
         pass
     
-    # Refresh othe
+    # Refresh NBA
     predict_games()
     
     # Refresh other sports
-    fromtry:
-             add_sports import fetc
-        except:
-            passh_sport_odds
+    from add_sports import fetch_sport_odds
     sports = ['nfl', 'nhl', 'soccer']
     for sport in sports:
-        fetch_sport_odds(sport)
+        try:
+            fetch_sport_odds(sport)
+        except:
+            pass
     
     return jsonify({"status": "success", "message": "All sports predictions refreshed"})
 

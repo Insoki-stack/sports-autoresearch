@@ -50,17 +50,59 @@ def fetch_mlb_odds():
             odds = response.json()
             print(f"Found {len(odds)} {sport['name']} games with odds")
             
-            # Add edge calculations
+            # Parse and flatten data to match dashboard format
+            predictions = []
             for game in odds:
-                game['sport'] = 'mlb'
+                home_team = game.get('home_team', '')
+                away_team = game.get('away_team', '')
+                
+                # Extract odds from each bookmaker
+                bookmakers = game.get('bookmakers', [])
+                for bookmaker in bookmakers:
+                    bookmaker_name = bookmaker.get('title', 'Unknown')
+                    markets = bookmaker.get('markets', [])
+                    
+                    for market in markets:
+                        if market.get('key') == 'h2h':
+                            outcomes = market.get('outcomes', [])
+                            for outcome in outcomes:
+                                team_name = outcome.get('name', '')
+                                price = outcome.get('price', 0)
+                                
+                                # Create prediction entry
+                                prediction = {
+                                    'away_team': away_team,
+                                    'home_team': home_team,
+                                    'team': team_name,
+                                    'moneyline': price,
+                                    'model_prob': 0.5,
+                                    'edge_vs_vegas': 0.0,
+                                    'positive_edge': False,
+                                    'bookmaker': bookmaker_name,
+                                    'sport': 'mlb'
+                                }
+                                
+                                # Calculate edge (simplified)
+                                if price > 0:
+                                    vegas_prob = 100 / (price + 100)
+                                else:
+                                    vegas_prob = -price / (-price + 100)
+                                vegas_prob *= 0.95
+                                
+                                edge = 0.5 - vegas_prob
+                                prediction['edge_vs_vegas'] = edge
+                                prediction['positive_edge'] = edge > 0
+                                prediction['model_prob'] = min(vegas_prob + edge, 1.0)
+                                
+                                predictions.append(prediction)
             
             # Save to cache
-            df = pd.DataFrame(odds)
+            df = pd.DataFrame(predictions)
             output_file = CACHE_DIR / "mlb_predictions_current.csv"
             df.to_csv(output_file, index=False)
-            print(f"Saved to {output_file}")
+            print(f"Saved {len(predictions)} predictions to {output_file}")
             
-            return odds
+            return predictions
         else:
             print(f"Error: {response.status_code}")
             return None
@@ -92,12 +134,54 @@ def fetch_sport_odds(sport_key):
             odds = response.json()
             print(f"Found {len(odds)} {sport['name']} games with odds")
             
-            # Add edge calculations
+            # Parse and flatten data to match dashboard format
+            predictions = []
             for game in odds:
-                game['sport'] = sport_key
+                home_team = game.get('home_team', '')
+                away_team = game.get('away_team', '')
+                
+                # Extract odds from each bookmaker
+                bookmakers = game.get('bookmakers', [])
+                for bookmaker in bookmakers:
+                    bookmaker_name = bookmaker.get('title', 'Unknown')
+                    markets = bookmaker.get('markets', [])
+                    
+                    for market in markets:
+                        if market.get('key') == 'h2h':
+                            outcomes = market.get('outcomes', [])
+                            for outcome in outcomes:
+                                team_name = outcome.get('name', '')
+                                price = outcome.get('price', 0)
+                                
+                                # Create prediction entry
+                                prediction = {
+                                    'away_team': away_team,
+                                    'home_team': home_team,
+                                    'team': team_name,
+                                    'moneyline': price,
+                                    'model_prob': 0.5,
+                                    'edge_vs_vegas': 0.0,
+                                    'positive_edge': False,
+                                    'bookmaker': bookmaker_name,
+                                    'sport': sport_key
+                                }
+                                
+                                # Calculate edge (simplified)
+                                if price > 0:
+                                    vegas_prob = 100 / (price + 100)
+                                else:
+                                    vegas_prob = -price / (-price + 100)
+                                vegas_prob *= 0.95
+                                
+                                edge = 0.5 - vegas_prob
+                                prediction['edge_vs_vegas'] = edge
+                                prediction['positive_edge'] = edge > 0
+                                prediction['model_prob'] = min(vegas_prob + edge, 1.0)
+                                
+                                predictions.append(prediction)
             
             # Save to cache
-            df = pd.DataFrame(odds)
+            df = pd.DataFrame(predictions)
             output_file = CACHE_DIR / f"{sport_key}_predictions_current.csv"
             df.to_csv(output_file, index=False)
             print(f"Saved to {output_file}")
