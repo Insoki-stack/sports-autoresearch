@@ -6,6 +6,7 @@ Everything is fair game: model architecture, features, hyperparameters, etc.
 
 import numpy as np
 import pandas as pd
+from typing import Tuple
 from xgboost import XGBClassifier, XGBRegressor
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
@@ -43,10 +44,17 @@ class SportsBettingModel:
         Prepare features and target from dataframe.
         Cascade can modify feature engineering here.
         """
-        # Placeholder - actual implementation depends on sport
-        feature_cols = [col for col in df.columns if col not in ['target', 'date']]
+        # Use only numeric columns as features
+        feature_cols = [col for col in df.columns if col not in ['target', 'date'] and df[col].dtype in ['int64', 'float64']]
         
-        X = df[feature_cols].values
+        if not feature_cols:
+            # If no numeric columns, create simple numeric features
+            print("Warning: No numeric columns found, creating simple features")
+            feature_cols = [col for col in df.columns if col not in ['target', 'date']]
+            X = pd.get_dummies(df[feature_cols], drop_first=True).values
+        else:
+            X = df[feature_cols].values
+        
         y = df['target'].values if 'target' in df.columns else np.zeros(len(df))
         
         return X, y
