@@ -79,72 +79,51 @@ def predict_games():
     print("Predicting Current NBA Games")
     print("="*60)
     
-    # Load trained model
-    model_file = MODELS_DIR / "nba_model.pkl"
-    if not model_file.exists():
-        print("No trained model found. Training...")
-        # Run training script with uv
-        import subprocess
-        result = subprocess.run(["uv", "run", "python", "train.py"], cwd=Path(__file__).parent)
-        if result.returncode != 0:
-            print("Training failed")
-            return None
-    
-    if model_file.exists():
-        model = joblib.load(model_file)
-        print(f"Loaded model from {model_file}")
-    else:
-        print("Could not load model")
-        return None
-    
-    # Fetch current games and odds
-    games = fetch_current_nba_games()
+    # Fetch current odds (includes game information)
     odds = fetch_current_nba_odds()
     
-    if not games or not odds:
-        print("No games or odds available")
+    if not odds:
+        print("No odds available")
         return None
     
-    # Match games with odds
+    # Extract game information from odds
     predictions = []
     
-    for game in games:
-        game_id = game.get("id")
-        home_team = game.get("home_team")
-        away_team = game.get("away_team")
-        commence_time = game.get("commence_time")
+    for odd in odds:
+        game_id = odd.get("id")
+        home_team = odd.get("home_team")
+        away_team = odd.get("away_team")
+        commence_time = odd.get("commence_time")
         
-        # Find matching odds
-        for odd in odds:
-            if odd.get("id") == game_id:
-                # Extract moneyline odds
-                bookmakers = odd.get("bookmakers", [])
-                if bookmakers:
-                    for bookmaker in bookmakers:
-                        markets = bookmaker.get("markets", [])
-                        for market in markets:
-                            if market.get("key") == "h2h":
-                                outcomes = market.get("outcomes", [])
-                                for outcome in outcomes:
-                                    predictions.append({
-                                        "game_id": game_id,
-                                        "team": outcome.get("name"),
-                                        "moneyline": outcome.get("price"),
-                                        "commence_time": commence_time,
-                                        "home_team": home_team,
-                                        "away_team": away_team,
-                                    })
-                break
+        # Extract moneyline odds
+        bookmakers = odd.get("bookmakers", [])
+        if bookmakers:
+            for bookmaker in bookmakers:
+                markets = bookmaker.get("markets", [])
+                for market in markets:
+                    if market.get("key") == "h2h":
+                        outcomes = market.get("outcomes", [])
+                        for outcome in outcomes:
+                            predictions.append({
+                                "game_id": game_id,
+                                "team": outcome.get("name"),
+                                "moneyline": outcome.get("price"),
+                                "commence_time": commence_time,
+                                "home_team": home_team,
+                                "away_team": away_team,
+                                "bookmaker": bookmaker.get("key"),
+                            })
     
     if predictions:
         df = pd.DataFrame(predictions)
-        print(f"Created {len(df)} predictions")
-        print(df)
+        print(f"Created {len(df)} predictions from {len(odds)} games")
+        print("\nCurrent NBA Games with Odds:")
+        print(df[['game_id', 'home_team', 'away_team', 'team', 'moneyline', 'commence_time']])
         
         # Save predictions
         output_file = CACHE_DIR / "nba_predictions_current.csv"
         df.to_csv(output_file, index=False)
-        print(f"Saved predictions to {output_file}")
+        print(f"\nSaved predictions to {output_file}")
         
         return df
     else:
