@@ -82,7 +82,7 @@ def fetch_mlb_odds():
         params = {
             "apiKey": ODDS_API_KEY,
             "regions": "us",
-            "markets": "h2h",
+            "markets": "h2h,spreads,totals",
             "oddsFormat": "american",
         }
         
@@ -152,7 +152,7 @@ def fetch_sport_odds(sport_key):
         params = {
             "apiKey": ODDS_API_KEY,
             "regions": "us",
-            "markets": "h2h",
+            "markets": "h2h,spreads,totals",
             "oddsFormat": "american",
         }
         
@@ -173,33 +173,44 @@ def fetch_sport_odds(sport_key):
                     markets = bookmaker.get('markets', [])
                     
                     for market in markets:
-                        if market.get('key') == 'h2h':
-                            outcomes = market.get('outcomes', [])
-                            for outcome in outcomes:
-                                team_name = outcome.get('name', '')
-                                price = outcome.get('price', 0)
-                                
-                                # Use trained model predictions
-                                if sport_key == 'soccer':
-                                    model_prob, edge = get_soccer_prediction(team_name, price)
-                                elif sport_key == 'nhl':
-                                    model_prob, edge = get_nhl_prediction(team_name, price)
-                                else:
-                                    model_prob, edge = 0.5, 0.0
-                                
-                                prediction = {
-                                    'away_team': away_team,
-                                    'home_team': home_team,
-                                    'team': team_name,
-                                    'moneyline': price,
-                                    'model_prob': model_prob,
-                                    'edge_vs_vegas': edge,
-                                    'positive_edge': edge > 0,
-                                    'bookmaker': bookmaker_name,
-                                    'sport': sport_key
-                                }
-                                
-                                predictions.append(prediction)
+                        market_key = market.get('key', '')
+                        outcomes = market.get('outcomes', [])
+                        
+                        for outcome in outcomes:
+                            team_name = outcome.get('name', '')
+                            price = outcome.get('price', 0)
+                            point = outcome.get('point', 0)
+                            
+                            # Determine bet type
+                            bet_type = 'moneyline'
+                            if market_key == 'spreads':
+                                bet_type = 'spread'
+                            elif market_key == 'totals':
+                                bet_type = 'total'
+                            
+                            # Use trained model predictions
+                            if sport_key == 'soccer':
+                                model_prob, edge = get_soccer_prediction(team_name, price)
+                            elif sport_key == 'nhl':
+                                model_prob, edge = get_nhl_prediction(team_name, price)
+                            else:
+                                model_prob, edge = 0.5, 0.0
+                            
+                            prediction = {
+                                'away_team': away_team,
+                                'home_team': home_team,
+                                'team': team_name,
+                                'moneyline': price,
+                                'point': point,
+                                'bet_type': bet_type,
+                                'model_prob': model_prob,
+                                'edge_vs_vegas': edge,
+                                'positive_edge': edge > 0,
+                                'bookmaker': bookmaker_name,
+                                'sport': sport_key
+                            }
+                            
+                            predictions.append(prediction)
             
             df = pd.DataFrame(predictions)
             output_file = CACHE_DIR / f"{sport_key}_predictions_current.csv"

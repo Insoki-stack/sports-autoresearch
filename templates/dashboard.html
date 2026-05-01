@@ -134,6 +134,14 @@
                     </select>
                 </div>
                 <div>
+                    <label class="text-sm text-gray-400">Bet Type</label>
+                    <select id="bet-type" class="w-full bg-gray-700 text-white px-3 py-2 rounded mt-1">
+                        <option value="moneyline">Moneyline</option>
+                        <option value="spread">Point Spread</option>
+                        <option value="total">Over/Under</option>
+                    </select>
+                </div>
+                <div>
                     <label class="text-sm text-gray-400">Team</label>
                     <input type="text" id="bet-team" placeholder="e.g., Arizona Diamondbacks" class="w-full bg-gray-700 text-white px-3 py-2 rounded mt-1">
                 </div>
@@ -141,12 +149,16 @@
                     <label class="text-sm text-gray-400">Amount ($)</label>
                     <input type="number" id="bet-amount" placeholder="10" class="w-full bg-gray-700 text-white px-3 py-2 rounded mt-1">
                 </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
                 <div>
                     <label class="text-sm text-gray-400">Odds</label>
                     <input type="number" id="bet-odds" placeholder="+118" class="w-full bg-gray-700 text-white px-3 py-2 rounded mt-1">
                 </div>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
+                <div>
+                    <label class="text-sm text-gray-400">Point</label>
+                    <input type="number" id="bet-point" placeholder="1.5" step="0.5" class="w-full bg-gray-700 text-white px-3 py-2 rounded mt-1">
+                </div>
                 <div>
                     <label class="text-sm text-gray-400">Away Team</label>
                     <input type="text" id="bet-away-team" placeholder="e.g., Arizona Diamondbacks" class="w-full bg-gray-700 text-white px-3 py-2 rounded mt-1">
@@ -155,13 +167,16 @@
                     <label class="text-sm text-gray-400">Home Team</label>
                     <input type="text" id="bet-home-team" placeholder="e.g., Chicago Cubs" class="w-full bg-gray-700 text-white px-3 py-2 rounded mt-1">
                 </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
                     <label class="text-sm text-gray-400">Edge (%)</label>
                     <input type="number" id="bet-edge" placeholder="5" step="0.1" class="w-full bg-gray-700 text-white px-3 py-2 rounded mt-1">
                 </div>
             </div>
             <button onclick="logBet()" class="bg-green-600 hover:bg-green-700 px-6 py-2 rounded-lg font-semibold transition">
-                Log Bet
+                Log BetBet Type</th>
+                            <th class="text-left py-2 px-3">
             </button>
         </div>
 
@@ -225,14 +240,16 @@
                         <tr class="border-b border-gray-700">
                             <th class="text-left py-2 px-3">Game</th>
                             <th class="text-left py-2 px-3">Team</th>
+                            <th class="text-left py-2 px-3">Bet Type</th>
                             <th class="text-left py-2 px-3">Moneyline</th>
+                            <th class="text-left py-2 px-3">Point</th>
                             <th class="text-left py-2 px-3">Model Prob</th>
                             <th class="text-left py-2 px-3">Edge</th>
                             <th class="text-left py-2 px-3">Bookmaker</th>
                         </tr>
                     </thead>
                     <tbody id="predictions-table">
-                        <tr><td colspan="6" class="text-center py-4 text-gray-400">Loading...</td></tr>
+                        <tr><td colspan="8" class="text-center py-4 text-gray-400">Loading...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -423,6 +440,7 @@
                 const result = await response.json();
                 
                 if (result.status === 'success') {
+                bet_type: document.getElementById('bet-type').value,
                     alert('Models trained successfully!');
                     await loadPredictions();
                 } else {
@@ -470,7 +488,8 @@
                 alert('Error logging bet');
             }
         }
-
+bet_type || 'moneyline'}</td>
+                        <td class="py-2 px-3">${bet.
         async function loadBetHistory() {
             try {
                 const response = await fetch('/api/bets?bookmaker=BetOnline.ag');
