@@ -402,9 +402,11 @@
                         <p class="text-xs text-gray-400">@ ${p.home_team || 'Home'}</p>
                     </td>
                     <td class="py-2 px-3">${p.team || 'Team'}</td>
+                    <td class="py-2 px-3">${p.bet_type || 'moneyline'}</td>
                     <td class="py-2 px-3 ${p.moneyline > 0 ? 'text-green-400' : 'text-red-400'}">
                         ${p.moneyline > 0 ? '+' : ''}${p.moneyline}
                     </td>
+                    <td class="py-2 px-3">${p.point || 0}</td>
                     <td class="py-2 px-3">${(p.model_prob * 100).toFixed(1)}%</td>
                     <td class="py-2 px-3 ${p.edge_vs_vegas > 0 ? 'text-green-400' : 'text-red-400'}">
                         ${(p.edge_vs_vegas * 100).toFixed(2)}%
