@@ -27,7 +27,7 @@ def fetch_current_nba_odds():
         params = {
             "apiKey": ODDS_API_KEY,
             "regions": "us",
-            "markets": "h2h",
+            "markets": "h2h,spreads,totals",
             "oddsFormat": "american",
         }
         
@@ -115,24 +115,34 @@ def predict_games():
         away_team = odd.get("away_team")
         commence_time = odd.get("commence_time")
         
-        # Extract moneyline odds
+        # Extract odds from all markets
         bookmakers = odd.get("bookmakers", [])
         if bookmakers:
             for bookmaker in bookmakers:
                 markets = bookmaker.get("markets", [])
                 for market in markets:
-                    if market.get("key") == "h2h":
-                        outcomes = market.get("outcomes", [])
-                        for outcome in outcomes:
-                            predictions.append({
-                                "game_id": game_id,
-                                "team": outcome.get("name"),
-                                "moneyline": outcome.get("price"),
-                                "commence_time": commence_time,
-                                "home_team": home_team,
-                                "away_team": away_team,
-                                "bookmaker": bookmaker.get("key"),
-                            })
+                    market_key = market.get("key")
+                    outcomes = market.get("outcomes", [])
+                    
+                    # Determine bet type
+                    bet_type = 'moneyline'
+                    if market_key == 'spreads':
+                        bet_type = 'spread'
+                    elif market_key == 'totals':
+                        bet_type = 'total'
+                    
+                    for outcome in outcomes:
+                        predictions.append({
+                            "game_id": game_id,
+                            "team": outcome.get("name"),
+                            "moneyline": outcome.get("price"),
+                            "point": outcome.get("point", 0),
+                            "bet_type": bet_type,
+                            "commence_time": commence_time,
+                            "home_team": home_team,
+                            "away_team": away_team,
+                            "bookmaker": bookmaker.get("key"),
+                        })
     
     if predictions:
         df = pd.DataFrame(predictions)
