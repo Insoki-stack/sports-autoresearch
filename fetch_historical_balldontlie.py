@@ -7,11 +7,10 @@ import requests
 import pandas as pd
 from pathlib import Path
 from datetime import datetime
+import time
 
 # BALLDONTLIE API configuration
-# Get free API key from: https://app.balldontlie.io/signup
-# Free tier: Available
-BDL_API_KEY = "YOUR_API_KEY"  # Replace with your actual API key
+BDL_API_KEY = "52345b0b-d723-4ee4-a137-8da2f92e3cdc"
 BDL_BASE_URL = "https://api.balldontlie.io"
 
 CACHE_DIR = Path.home() / ".cache" / "sports-autoresearch"
@@ -103,8 +102,8 @@ def save_sport_data(sport, games):
 def main():
     print("Fetching historical sports data from BALLDONTLIE API...")
     
-    # Fetch data for each sport
-    seasons = [2022, 2023, 2024]
+    # Fetch data for multiple seasons
+    seasons = [2024, 2023, 2022]
     
     for season in seasons:
         print(f"\nFetching data for {season}...")
@@ -114,15 +113,22 @@ def main():
         if nba_games:
             save_sport_data("nba", nba_games)
         
+        # Add delay5to avoid rate limiting
+        time.sleep(2)
+        
         # NHL
         nhl_games = fetch_nhl_games(season)
         if nhl_games:
             save_sport_data("nhl", nhl_games)
         
+        time.sleep(2)
+        
         # Soccer
         soccer_games = fetch_soccer_games(season=season)
         if soccer_games:
             save_sport_data("soccer", soccer_games)
+        
+        time.sleep(2)
 
 if __name__ == "__main__":
     main()

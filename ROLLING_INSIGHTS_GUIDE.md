@@ -1,6 +1,18 @@
 # Rolling Insights Historical Data Guide
 
-## How to Get Historical Sports Data
+## Automated APIs Failed
+
+BALLDONTLIE API issues:
+- Rate limiting (429 errors)
+- Wrong data (1946 instead of 2022-2024)
+- 401 unauthorized errors
+- Free tier too limited
+
+iSports API issues:
+- Invalid SSL certificate
+- Security warning
+
+## Recommended: Manual Download via Rolling Insights
 
 Rolling Insights offers free historical NFL, NBA, MLB & NHL stats with CSV exports.
 
@@ -9,7 +21,7 @@ Rolling Insights offers free historical NFL, NBA, MLB & NHL stats with CSV expor
 1. **Sign up for free**: https://sportwise.rolling-insights.com/register
 2. **Browse DataSpaces**: Check featured DataSpaces or create your own
 3. **Select data**: Choose the stats you need (games, scores, teams, players)
-4. **Export as CSV**: One-click export to CSV file
+4. **Export as CSV File**: One-click export to CSV file
 
 ## Data Available:
 - NFL: Historical game data, team stats, player stats (back to 2017)
@@ -24,7 +36,7 @@ Rolling Insights offers free historical NFL, NBA, MLB & NHL stats with CSV expor
    - `nba_historical_rolling.csv`
    - `nhl_historical_rolling.csv`
    - `mlb_historical_rolling.csv`
-3. Run model training to use this data
+3. Contact me to train models with this data
 
 ## Recommended Data to Download:
 - **NBA**: Game scores, team records, player stats for 2022-2024
@@ -36,3 +48,4 @@ Rolling Insights offers free historical NFL, NBA, MLB & NHL stats with CSV expor
 - No API key required
 - Manual selection of specific data points
 - Clean CSV format ready for analysis
+- No rate limiting
