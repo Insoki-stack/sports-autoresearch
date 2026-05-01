@@ -446,7 +446,6 @@
                 const result = await response.json();
                 
                 if (result.status === 'success') {
-                bet_type: document.getElementById('bet-type').value,
                     alert('Models trained successfully!');
                     await loadPredictions();
                 } else {
@@ -495,8 +494,7 @@
             }
         }
 bet_type || 'moneyline'}</td>
-                        <td class="py-2 px-3">${bet.
-        async function loadBetHistory() {
+
             try {
                 const response = await fetch('/api/bets?bookmaker=BetOnline.ag');
                 const bets = await response.json();
