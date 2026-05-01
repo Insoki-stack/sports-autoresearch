@@ -493,8 +493,8 @@
                 alert('Error logging bet');
             }
         }
-bet_type || 'moneyline'}</td>
 
+        async function loadBetHistory() {
             try {
                 const response = await fetch('/api/bets?bookmaker=BetOnline.ag');
                 const bets = await response.json();
