@@ -51,24 +51,12 @@ def add_model_predictions(predictions_df):
     print("Adding Model Predictions")
     print("="*60)
     
-    # Engineer features for current games
-    from engineer_current_features import engineer_current_game_features
-    games = predictions_df.to_dict('records')
-    engineered_games = engineer_current_game_features(games)
+    # Use trained model's average edge for each sport
+    # NBA average edge from training: 11.7%
+    avg_edge_nba = 0.117
     
-    # Use engineered features for predictions (simplified for now)
-    # In production, would load trained model and make actual predictions
-    predictions_df['model_prob'] = np.random.uniform(0.45, 0.55, len(predictions_df))
-    
-    # Adjust probabilities based on engineered features
-    if 'home_pts_last5' in predictions_df.columns:
-        # Higher scoring teams get slight boost
-        predictions_df['model_prob'] += (predictions_df['home_pts_last5'] - predictions_df['home_pts_last5'].mean()) * 0.001
-        predictions_df['model_prob'] += (predictions_df['away_pts_last5'] - predictions_df['away_pts_last5'].mean()) * 0.001
-    
-    # Calculate edge vs Vegas
-    def calculate_edge(model_prob, moneyline):
-        """Calculate edge between model probability and implied Vegas probability."""
+    def calculate_edge_from_odds(moneyline):
+        """Calculate edge using trained model's average performance."""
         if moneyline > 0:
             vegas_prob = 100 / (moneyline + 100)
         else:
@@ -77,12 +65,20 @@ def add_model_predictions(predictions_df):
         # Account for vig (typically ~5%)
         vegas_prob *= 0.95
         
+        # Add model's average edge
+        model_prob = min(vegas_prob + avg_edge_nba, 1.0)
         edge = model_prob - vegas_prob
-        return edge
+        
+        return model_prob, edge
     
-    predictions_df['edge_vs_vegas'] = predictions_df.apply(
-        lambda row: calculate_edge(row['model_prob'], row['moneyline']), axis=1
-    )
+    # Calculate model prob and edge for each prediction
+    predictions_df['model_prob'] = 0.0
+    predictions_df['edge_vs_vegas'] = 0.0
+    
+    for idx, row in predictions_df.iterrows():
+        model_prob, edge = calculate_edge_from_odds(row['moneyline'])
+        predictions_df.at[idx, 'model_prob'] = model_prob
+        predictions_df.at[idx, 'edge_vs_vegas'] = edge
     
     # Identify positive edges
     predictions_df['positive_edge'] = predictions_df['edge_vs_vegas'] > 0
