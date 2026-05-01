@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sports Autoresearch Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gray-900 text-white min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <header class="mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold text-center mb-2">🏀 Sports Autoresearch Dashboard</h1>
+            <p class="text-gray-400 text-center">AI-Powered Sports Betting Predictions</p>
+            <p class="text-sm text-gray-500 text-center mt-2" id="last-updated">Last updated: Loading...</p>
+        </header>
+
+        <!-- Controls -->
+        <div class="flex flex-wrap gap-4 justify-center mb-8">
+            <button onclick="refreshPredictions()" class="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg font-semibold transition">
+                🔄 Refresh Predictions
+            </button>
+            <button onclick="trainModels()" class="bg-green-600 hover:bg-green-700 px-6 py-3 rounded-lg font-semibold transition">
+                🎓 Train Models
+            </button>
+        </div>
+
+        <!-- Stats Overview -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            <div class="bg-gray-800 rounded-lg p-4 text-center">
+                <p class="text-2xl font-bold text-blue-400" id="total-games">-</p>
+                <p class="text-sm text-gray-400">Total Games</p>
+            </div>
+            <div class="bg-gray-800 rounded-lg p-4 text-center">
+                <p class="text-2xl font-bold text-green-400" id="positive-edges">-</p>
+                <p class="text-sm text-gray-400">Positive Edges</p>
+            </div>
+            <div class="bg-gray-800 rounded-lg p-4 text-center">
+                <p class="text-2xl font-bold text-yellow-400" id="avg-edge">-</p>
+                <p class="text-sm text-gray-400">Avg Edge</p>
+            </div>
+            <div class="bg-gray-800 rounded-lg p-4 text-center">
+                <p class="text-2xl font-bold text-purple-400" id="edge-rate">-</p>
+                <p class="text-sm text-gray-400">Edge Rate</p>
+            </div>
+        </div>
+
+        <!-- Best Bets -->
+        <div class="bg-gray-800 rounded-lg p-6 mb-8">
+            <h2 class="text-xl font-bold mb-4">🎯 Best Betting Opportunities</h2>
+            <div id="best-bets" class="space-y-3">
+                <p class="text-gray-400">Loading...</p>
+            </div>
+        </div>
+
+        <!-- All Predictions -->
+        <div class="bg-gray-800 rounded-lg p-6">
+            <h2 class="text-xl font-bold mb-4">📊 All Predictions</h2>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="border-b border-gray-700">
+                            <th class="text-left py-2 px-3">Game</th>
+                            <th class="text-left py-2 px-3">Team</th>
+                            <th class="text-left py-2 px-3">Moneyline</th>
+                            <th class="text-left py-2 px-3">Model Prob</th>
+                            <th class="text-left py-2 px-3">Edge</th>
+                            <th class="text-left py-2 px-3">Bookmaker</th>
+                        </tr>
+                    </thead>
+                    <tbody id="predictions-table">
+                        <tr><td colspan="6" class="text-center py-4 text-gray-400">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function loadPredictions() {
+            try {
+                const response = await fetch('/api/predictions');
+                const predictions = await response.json();
+                
+                if (predictions.error) {
+                    console.error(predictions.error);
+                    return;
+                }
+                
+                updateStats(predictions);
+                updateBestBets(predictions);
+                updateTable(predictions);
+                document.getElementById('last-updated').textContent = 
+                    'Last updated: ' + new Date().toLocaleString();
+            } catch (error) {
+                console.error('Error loading predictions:', error);
+            }
+        }
+
+        function updateStats(predictions) {
+            const totalGames = predictions.length;
+            const positiveEdges = predictions.filter(p => p.positive_edge).length;
+            const avgEdge = (predictions.reduce((sum, p) => sum + p.edge_vs_vegas, 0) / totalGames * 100).toFixed(2);
+            const edgeRate = ((positiveEdges / totalGames) * 100).toFixed(1);
+            
+            document.getElementById('total-games').textContent = totalGames;
+            document.getElementById('positive-edges').textContent = positiveEdges;
+            document.getElementById('avg-edge').textContent = avgEdge + '%';
+            document.getElementById('edge-rate').textContent = edgeRate + '%';
+        }
+
+        function updateBestBets(predictions) {
+            const bestBets = predictions
+                .filter(p => p.positive_edge)
+                .sort((a, b) => b.edge_vs_vegas - a.edge_vs_vegas)
+                .slice(0, 5);
+            
+            const container = document.getElementById('best-bets');
+            
+            if (bestBets.length === 0) {
+                container.innerHTML = '<p class="text-gray-400">No positive edges found</p>';
+                return;
+            }
+            
+            container.innerHTML = bestBets.map(bet => `
+                <div class="bg-gray-700 rounded p-3 flex justify-between items-center">
+                    <div>
+                        <p class="font-semibold">${bet.away_team} @ ${bet.home_team}</p>
+                        <p class="text-sm text-gray-400">${bet.team}</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="font-bold text-green-400">${bet.moneyline > 0 ? '+' : ''}${bet.moneyline}</p>
+                        <p class="text-sm text-green-400">Edge: ${(bet.edge_vs_vegas * 100).toFixed(1)}%</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updateTable(predictions) {
+            const tbody = document.getElementById('predictions-table');
+            
+            tbody.innerHTML = predictions.slice(0, 20).map(p => `
+                <tr class="border-b border-gray-700 hover:bg-gray-700">
+                    <td class="py-2 px-3">
+                        <p class="font-medium">${p.away_team}</p>
+                        <p class="text-xs text-gray-400">@ ${p.home_team}</p>
+                    </td>
+                    <td class="py-2 px-3">${p.team}</td>
+                    <td class="py-2 px-3 ${p.moneyline > 0 ? 'text-green-400' : 'text-red-400'}">
+                        ${p.moneyline > 0 ? '+' : ''}${p.moneyline}
+                    </td>
+                    <td class="py-2 px-3">${(p.model_prob * 100).toFixed(1)}%</td>
+                    <td class="py-2 px-3 ${p.edge_vs_vegas > 0 ? 'text-green-400' : 'text-red-400'}">
+                        ${(p.edge_vs_vegas * 100).toFixed(2)}%
+                    </td>
+                    <td class="py-2 px-3 text-xs text-gray-400">${p.bookmaker}</td>
+                </tr>
+            `).join('');
+        }
+
+        async function refreshPredictions() {
+            const btn = event.target;
+            btn.disabled = true;
+            btn.textContent = '⏳ Refreshing...';
+            
+            try {
+                const response = await fetch('/api/refresh');
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    await loadPredictions();
+                } else {
+                    alert('Error: ' + result.message);
+                }
+            } catch (error) {
+                alert('Error refreshing predictions');
+            }
+            
+            btn.disabled = false;
+            btn.textContent = '🔄 Refresh Predictions';
+        }
+
+        async function trainModels() {
+            const btn = event.target;
+            btn.disabled = true;
+            btn.textContent = '⏳ Training...';
+            
+            try {
+                const response = await fetch('/api/train');
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    alert('Models trained successfully!');
+                    await loadPredictions();
+                } else {
+                    alert('Error: ' + result.message);
+                }
+            } catch (error) {
+                alert('Error training models');
+            }
+            
+            btn.disabled = false;
+            btn.textContent = '🎓 Train Models';
+        }
+
+        // Load predictions on page load
+        loadPredictions();
+        
+        // Auto-refresh every 5 minutes
+        setInterval(loadPredictions, 300000);
+    </script>
+</body>
+</html>

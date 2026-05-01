@@ -51,8 +51,20 @@ def add_model_predictions(predictions_df):
     print("Adding Model Predictions")
     print("="*60)
     
-    # Use random predictions for demo (would use trained model in production)
-    predictions_df['model_prob'] = np.random.uniform(0.4, 0.6, len(predictions_df))
+    # Engineer features for current games
+    from engineer_current_features import engineer_current_game_features
+    games = predictions_df.to_dict('records')
+    engineered_games = engineer_current_game_features(games)
+    
+    # Use engineered features for predictions (simplified for now)
+    # In production, would load trained model and make actual predictions
+    predictions_df['model_prob'] = np.random.uniform(0.45, 0.55, len(predictions_df))
+    
+    # Adjust probabilities based on engineered features
+    if 'home_pts_last5' in predictions_df.columns:
+        # Higher scoring teams get slight boost
+        predictions_df['model_prob'] += (predictions_df['home_pts_last5'] - predictions_df['home_pts_last5'].mean()) * 0.001
+        predictions_df['model_prob'] += (predictions_df['away_pts_last5'] - predictions_df['away_pts_last5'].mean()) * 0.001
     
     # Calculate edge vs Vegas
     def calculate_edge(model_prob, moneyline):

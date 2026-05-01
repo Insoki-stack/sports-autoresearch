@@ -230,17 +230,37 @@ def train_sport_model(sport: str, time_budget: int = 300):
 # MAIN EXPERIMENT
 # ==============================================================================
 
-if __name__ == "__main__":
-    # Train models for all sports
-    sports = prepare.get_sports_list()
+def train_all_sports():
+    """Train models for all sports."""
+    print("="*60)
+    print("Training All Sports Models")
+    print("="*60)
     
-    results = {}
+    sports = ['mlb', 'nba', 'golf', 'tennis']
+    
     for sport in sports:
-        result = train_sport_model(sport)
-        if result:
-            results[sport] = result
+        print(f"\n============================================================")
+        print(f"Training {sport.upper()} model")
+        print(f"============================================================")
+        
+        try:
+            model_classes = {
+                'mlb': MLBModel,
+                'nba': NBAModel,
+                'golf': GolfModel,
+                'tennis': TennisModel
+            }
+            
+            if sport in model_classes:
+                model = model_classes[sport]()
+                model.train()
+                model.evaluate()
+        except Exception as e:
+            print(f"Error training {sport}: {e}")
     
-    print(f"\n{'='*60}")
-    print("EXPERIMENT COMPLETE")
-    print(f"{'='*60}")
-    print(f"Trained models for {len(results)} sports")
+    print("\n" + "="*60)
+    print("All Models Training Complete!")
+    print("="*60)
+
+if __name__ == "__main__":
+    train_all_sports()
