@@ -257,7 +257,22 @@
                     return;
                 }
                 
-                const predictions = currentSport === 'all' ? (data.nba || []) : data;
+                let predictions;
+                if (currentSport === 'all') {
+                    // Combine all sports predictions
+                    predictions = [];
+                    for (const sport in data) {
+                        if (Array.isArray(data[sport])) {
+                            predictions = predictions.concat(data[sport]);
+                        }
+                    }
+                    // Sort by edge and take top 5
+                    predictions = predictions
+                        .sort((a, b) => (b.edge_vs_vegas || 0) - (a.edge_vs_vegas || 0))
+                        .slice(0, 5);
+                } else {
+                    predictions = data;
+                }
                 
                 if (predictions && predictions.length > 0) {
                     updateStats(predictions);
