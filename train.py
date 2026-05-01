@@ -184,6 +184,8 @@ def train_sport_model(sport: str, time_budget: int = 300):
         "nba": NBAModel,
         "golf": GolfModel,
         "tennis": TennisModel,
+        "soccer": SoccerModel,
+        "nhl": NHLModel,
     }
     
     if sport not in model_map:
@@ -260,7 +262,7 @@ def train_all_sports():
     print("Training All Sports Models")
     print("="*60)
     
-    sports = ['mlb', 'nba', 'golf', 'tennis']
+    sports = ['mlb', 'nba', 'nhl', 'soccer', 'golf', 'tennis']
     
     for sport in sports:
         try:

@@ -118,6 +118,12 @@ def load_historical_data(sport: str) -> pd.DataFrame:
         print(f"Loading cached data for {sport}")
         return pd.read_csv(cache_file)
     
+    # Try ESPN historical data
+    espn_file = CACHE_DIR / f"{sport}_historical_espn.csv"
+    if espn_file.exists():
+        print(f"Loading ESPN historical data for {sport}")
+        return pd.read_csv(espn_file)
+    
     print(f"No cached data found for {sport}. Expected location: {cache_file}")
     return pd.DataFrame()
 
