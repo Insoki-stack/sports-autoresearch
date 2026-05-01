@@ -119,9 +119,9 @@ Predictions refresh automatically at 8:00 AM and 6:00 PM daily.
 - Stay disciplined
 - Take breaks when losing
 
-## Cloud Deployment
+## Cloud Deployment (Recommended - Run 24/7)
 
-To access the dashboard from anywhere (while out and about):
+**Easiest way to keep bot running when you close your laptop:**
 
 1. **Push to GitHub**
 ```bash
@@ -130,16 +130,44 @@ git commit -m "Ready for deployment"
 git push origin autoresearch/may1
 ```
 
-2. **Deploy to Render.com**
-- Sign up at render.com (free tier available)
+2. **Deploy to Render.com (FREE)**
+- Go to render.com (free account)
+- Click "New +" → "Web Service"
 - Connect your GitHub repository
-- Use `render.yaml` configuration
-- Dashboard will be live at your Render URL
+- Use `render.yaml` configuration (already in project)
+- Click "Deploy"
 
 3. **Access from Anywhere**
-- Use your Render URL on phone/tablet
-- Mobile-responsive design works on all devices
-- Check predictions while out and about
+- Your dashboard: `https://your-app.onrender.com`
+- Works on phone, tablet, laptop - anywhere
+- Bot runs 24/7, no need to keep laptop open
+
+**Other Options:** See `BACKGROUND_RUNNING.md` for Windows Service, tmux, or VPS options.
+
+## How Much to Bet
+
+**The dashboard now includes a Bankroll Management section:**
+- Enter your bankroll (e.g., $1000)
+- System calculates recommended bet sizes:
+  - **Conservative (1%)**: $10 per bet
+  - **Moderate (2-3%)**: $25 per bet
+  - **Aggressive (5%)**: $50 per bet
+
+**Recommended:**
+- Start with **1-2%** of bankroll per bet
+- Never bet more than **5%** per game
+- Kelly Criterion: Bet = (Edge / Odds) × Bankroll
+
+**How Many Bets:**
+- **3-5 bets per day** maximum
+- Only bet on edges > 2%
+- Spread bets across multiple games to reduce variance
+- Quality over quantity - better to miss a good bet than make a bad one
+
+**Example with $1000 bankroll:**
+- Conservative: $10 per bet, 3-5 bets = $30-50 total daily
+- Moderate: $25 per bet, 3-5 bets = $75-125 total daily
+- Aggressive: $50 per bet, 3-5 bets = $150-250 total daily
 
 ## Technical Overview
 

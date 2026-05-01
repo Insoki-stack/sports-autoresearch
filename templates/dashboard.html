@@ -16,6 +16,15 @@
             <p class="text-sm text-gray-500 text-center mt-2" id="last-updated">Last updated: Loading...</p>
         </header>
 
+        <!-- Sport Selector -->
+        <div class="flex flex-wrap gap-2 justify-center mb-6">
+            <button onclick="loadSport('nba')" class="sport-btn bg-orange-600 hover:bg-orange-700 px-4 py-2 rounded-lg font-semibold transition active" data-sport="nba">🏀 NBA</button>
+            <button onclick="loadSport('nfl')" class="sport-btn bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg font-semibold transition" data-sport="nfl">🏈 NFL</button>
+            <button onclick="loadSport('nhl')" class="sport-btn bg-cyan-600 hover:bg-cyan-700 px-4 py-2 rounded-lg font-semibold transition" data-sport="nhl">🏒 NHL</button>
+            <button onclick="loadSport('soccer')" class="sport-btn bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg font-semibold transition" data-sport="soccer">⚽ Soccer</button>
+            <button onclick="loadSport('all')" class="sport-btn bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-lg font-semibold transition" data-sport="all">📊 All</button>
+        </div>
+
         <!-- Controls -->
         <div class="flex flex-wrap gap-4 justify-center mb-8">
             <button onclick="refreshPredictions()" class="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg font-semibold transition">
@@ -24,6 +33,37 @@
             <button onclick="trainModels()" class="bg-green-600 hover:bg-green-700 px-6 py-3 rounded-lg font-semibold transition">
                 🎓 Train Models
             </button>
+        </div>
+
+        <!-- Bankroll Management -->
+        <div class="bg-gray-800 rounded-lg p-6 mb-8">
+            <h2 class="text-xl font-bold mb-4">💰 Bankroll Management</h2>
+            <div class="flex flex-wrap gap-4 items-center mb-4">
+                <label class="text-gray-400">Your Bankroll ($):</label>
+                <input type="number" id="bankroll" value="1000" class="bg-gray-700 text-white px-4 py-2 rounded-lg w-40" onchange="updateBetRecommendations()">
+                <button onclick="updateBetRecommendations()" class="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-lg transition">Calculate</button>
+            </div>
+            <div id="bet-recommendations" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="bg-gray-700 rounded p-4">
+                    <p class="text-sm text-gray-400">Conservative (1%)</p>
+                    <p class="text-2xl font-bold text-green-400" id="bet-conservative">$10</p>
+                    <p class="text-xs text-gray-500">Low risk, steady growth</p>
+                </div>
+                <div class="bg-gray-700 rounded p-4">
+                    <p class="text-sm text-gray-400">Moderate (2-3%)</p>
+                    <p class="text-2xl font-bold text-yellow-400" id="bet-moderate">$25</p>
+                    <p class="text-xs text-gray-500">Balanced risk/reward</p>
+                </div>
+                <div class="bg-gray-700 rounded p-4">
+                    <p class="text-sm text-gray-400">Aggressive (5%)</p>
+                    <p class="text-2xl font-bold text-red-400" id="bet-aggressive">$50</p>
+                    <p class="text-xs text-gray-500">Higher risk, higher reward</p>
+                </div>
+            </div>
+            <div class="mt-4 p-4 bg-gray-700 rounded-lg">
+                <p class="text-sm text-gray-400">Recommended number of bets per day: <span class="text-white font-bold">3-5</span></p>
+                <p class="text-xs text-gray-500 mt-2">Only bet on edges > 2%. Spread bets across multiple games to reduce variance.</p>
+            </div>
         </div>
 
         <!-- Stats Overview -->
@@ -69,24 +109,54 @@
                             <th class="text-left py-2 px-3">Bookmaker</th>
                         </tr>
                     </thead>
-                    <tbody id="predictions-table">
+        let currentSport = 'nb ';
+        
+        a           <tbody id="predictions-table">
                         <tr><td colspan="6" class="text-center py-4 text-gray-400">Loading...</td></tr>
-                    </tbody>
-                </table>
+                le</utl'/p/predicions';
+               i (currnSport !== all') {
+                    url = `/${currentSport}`
+                }
+                
+                </tablreseons = awat fetch(url);
+                t data
             </div>
-        </div>
-    </div>
+        </div>aa
+    </div>aa
 
     <script>
-        async function loadPredictions() {
-            try {
-                const response = await fetch('/api/predictions');
-                const predictions = await response.json();
                 
-                if (predictions.error) {
-                    console.error(predictions.error);
-                    return;
+                // Handle different response formats
+                const predictions = currentSport === 'all' ? data.nba || [] : data;
+                
+           asyncif (predictionsf&&upredictions.length > 0) {nction loadPredictions() {
+            try     {
+                    const response = await fetch('/api/predictions');
+                    const predictions = await response.json();
+                    
+                if (    predictions.error) {
+                  else {
+                    do ument.getElementById('total-g mes'). extContent = '0';
+                    do ument.getElementById('positive-edges').textContent = '0';
+                    document.getElementById('best-bets').innerHTML = '<p class="text-gray-400">No predictions available for t is sport</p>';
                 }
+            } catch console.error(predictions.error);
+                    return;
+             
+        }
+
+        function loadSport(sport) {
+            currentSport = sport;
+            
+            // Update button styles
+            document.querySelectorAll('.sport-btn').forEach(btn => {
+                btn.classList.remove('ring-2', 'ring-white');
+                if (btn.dataset.sport === sport) {
+                    btn.classList.add('ring-2', 'ring-white');
+                }
+            });
+            
+            loadPredictions();   }
                 
                 updateStats(predictions);
                 updateBestBets(predictions);
@@ -96,6 +166,18 @@
             } catch (error) {
                 console.error('Error loading predictions:', error);
             }
+        }
+
+        function updateBetRecommendations() {
+            const bankroll = parseFloat(document.getElementById('bankroll').value) || 1000;
+            
+            const conservative = (bankroll * 0.01).toFixed(2);
+            const moderate = (bankroll * 0.025).toFixed(2);
+            const aggressive = (bankroll * 0.05).toFixed(2);
+            
+            document.getElementById('bet-conservative').textContent = '$' + conservative;
+            document.getElementById('bet-moderate').textContent = '$' + moderate;
+            document.getElementById('bet-aggressive').textContent = '$' + aggressive;
         }
 
         function updateStats(predictions) {

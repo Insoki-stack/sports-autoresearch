@@ -24,30 +24,66 @@ def index():
     """Main dashboard page."""
     return render_template('dashboard.html')
 
-@app.route('/api/predictions')
-def get_predictions():
-    """API endpoint for current predictions."""
-    predictions_file = CACHE_DIR / "nba_predictions_current.csv"
+@app.route('/api/predictions/<sport>')
+def get_sport_predictions(sport):
+    """API endpoint for predictions for a specific sport."""
+    predictions_file = CACHE_DIR / f"{sport}_predictions_current.csv"
     
     if not predictions_file.exists():
         # Generate fresh predictions
-        predict_games()
+        if sport == 'nba':
+            predict_games()
+        else:
+            from add_sports import fetch_sport_odds
+            fetch_sport_odds(sport)
     
     if predictions_file.exists():
         df = pd.read_csv(predictions_file)
         return jsonify(df.to_dict(orient='records'))
     else:
-        return jsonify({"error": "No predictions available"})
+        return jsonify({"error": f"No predictions available for {sport}"})
+
+@app.route('/api/predictions')
+def get_predictions():
+    """API endpoint for all sports predictions."""
+    sports = ['nba', 'nfl', 'nhl', 'soccer']
+    all_predictions = {}
+    
+    for sport in sports:
+        predictions_file = CACHE_DIR / f"{sport}_predictions_current.csv"
+        if predictions_file.exists():
+            df = pd.read_csv(predictions_file)
+            all_predictions[sport] = df.to_dict(orient='records')
+        else:
+            # Generate predictions for this sport
+            if sport == 'nba':
+                predict_games()
+            else:
+                from add_sports import fetch_sport_odds
+                fetch_sport_odds(sport)
+            
+            # Try again after generating
+            if predictions_file.exists():
+                df = pd.read_csv(predictions_file)
+                all_predictions[sport] = df.to_dict(orient='records')
+            else:
+                all_predictions[sport] = []
+    
+    return jsonify(all_predictions)
 
 @app.route('/api/refresh')
 def refresh_predictions():
-    """Refresh predictions by fetching latest odds."""
-    predictions_df = predict_games()
+    """Refresh predictions for all sports."""
+    # Refresh NBA
+    predict_games()
     
-    if predictions_df is not None:
-        return jsonify({"status": "success", "count": len(predictions_df)})
-    else:
-        return jsonify({"status": "error", "message": "Failed to fetch predictions"})
+    # Refresh other sports
+    from add_sports import fetch_sport_odds
+    sports = ['nfl', 'nhl', 'soccer']
+    for sport in sports:
+        fetch_sport_odds(sport)
+    
+    return jsonify({"status": "success", "message": "All sports predictions refreshed"})
 
 @app.route('/api/train')
 def train_models():
