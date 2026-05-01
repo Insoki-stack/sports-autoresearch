@@ -12,7 +12,8 @@ CACHE_DIR.mkdir(parents=True, exist_ok=True)
 
 # Direct CSV sources for historical odds
 ODDS_SOURCES = {
-    "nba_historical_odds": "https://raw.githubusercontent.com/erikvdven/nba_historical_betting_data/master/nba_historical_betting_data.csv",
+    "nba_odds_2013_2018": "https://raw.githubusercontent.com/TK-Problem/Interesting_Sport_Stats/master/NBA_2013_2018.csv",
+    "nba_odds_2014_2015": "https://raw.githubusercontent.com/TK-Problem/Interesting_Sport_Stats/master/NBA_2014_2015.csv",
 }
 
 def fetch_historical_odds():

@@ -77,13 +77,18 @@ def fetch_nba_historical_odds(days_from: int = 30):
 
 def main():
     """Fetch historical odds."""
-    # Try to get more historical data
-    odds_df = fetch_nba_historical_odds(days_from=7)  # Last 7 days
+    # Try to get more historical data - Odds API limits how far back we can go
+    print("Trying different time ranges...")
     
-    if odds_df is not None:
-        print("\n" + "="*60)
-        print("Historical Odds Fetch Complete!")
-        print("="*60)
+    for days in [7, 14, 30]:
+        print(f"\nFetching last {days} days...")
+        odds_df = fetch_nba_historical_odds(days_from=days)
+        if odds_df is not None:
+            print(f"Success: {len(odds_df)} odds entries")
+    
+    print("\n" + "="*60)
+    print("Historical Odds Fetch Complete!")
+    print("="*60)
 
 if __name__ == "__main__":
     main()
