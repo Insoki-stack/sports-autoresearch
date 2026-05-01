@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: sports-autoresearch
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    envVars:
+      - key: ODDS_API_KEY
+        value: da6e9aec8a38554193953371d6a8dca5
+    region: oregon
