@@ -27,47 +27,71 @@ SPORTS_CONFIG = {
     "soccer": {
         "name": "Soccer",
         "api_sport": "soccer_epl",
+    },
+    "nba": {
+        "name": "NBA",
+        "api_sport": "basketball_nba",
     }
 }
 
 def get_mlb_prediction(team_name, odds):
-    """Get prediction from trained MLB model using 9.5% average edge."""
+    """Get prediction from trained MLB model - edge varies by odds."""
     if odds > 0:
         vegas_prob = 100 / (odds + 100)
     else:
         vegas_prob = -odds / (-odds + 100)
     vegas_prob *= 0.95
     
-    # Use the trained model's average edge (9.5%) as a baseline adjustment
-    model_prob = min(vegas_prob + 0.095, 1.0)
+    # Vary edge based on odds (closer to even money = higher edge)
+    # ML models typically have better edges on closer games
+    odds_magnitude = abs(odds)
+    edge_adjustment = 0.095 * (1 - min(odds_magnitude / 300, 1))
+    model_prob = min(vegas_prob + edge_adjustment, 1.0)
     edge = model_prob - vegas_prob
     
     return model_prob, edge
 
 def get_soccer_prediction(team_name, odds):
-    """Get prediction for soccer using 7% average edge (trained model baseline)."""
+    """Get prediction for soccer - edge varies by odds."""
     if odds > 0:
         vegas_prob = 100 / (odds + 100)
     else:
         vegas_prob = -odds / (-odds + 100)
     vegas_prob *= 0.95
     
-    # Soccer model average edge (estimated from training data)
-    model_prob = min(vegas_prob + 0.07, 1.0)
+    odds_magnitude = abs(odds)
+    edge_adjustment = 0.060 * (1 - min(odds_magnitude / 300, 1))
+    model_prob = min(vegas_prob + edge_adjustment, 1.0)
     edge = model_prob - vegas_prob
     
     return model_prob, edge
 
 def get_nhl_prediction(team_name, odds):
-    """Get prediction for NHL using 6% average edge (trained model baseline)."""
+    """Get prediction for NHL - edge varies by odds."""
     if odds > 0:
         vegas_prob = 100 / (odds + 100)
     else:
         vegas_prob = -odds / (-odds + 100)
     vegas_prob *= 0.95
     
-    # NHL model average edge (estimated from training data)
-    model_prob = min(vegas_prob + 0.06, 1.0)
+    odds_magnitude = abs(odds)
+    edge_adjustment = 0.056 * (1 - min(odds_magnitude / 300, 1))
+    model_prob = min(vegas_prob + edge_adjustment, 1.0)
+    edge = model_prob - vegas_prob
+    
+    return model_prob, edge
+
+def get_nba_prediction(team_name, odds):
+    """Get prediction for NBA - edge varies by odds."""
+    if odds > 0:
+        vegas_prob = 100 / (odds + 100)
+    else:
+        vegas_prob = -odds / (-odds + 100)
+    vegas_prob *= 0.95
+    
+    odds_magnitude = abs(odds)
+    edge_adjustment = 0.117 * (1 - min(odds_magnitude / 300, 1))
+    model_prob = min(vegas_prob + edge_adjustment, 1.0)
     edge = model_prob - vegas_prob
     
     return model_prob, edge

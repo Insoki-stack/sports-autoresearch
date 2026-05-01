@@ -51,41 +51,93 @@ def add_model_predictions(predictions_df):
     print("Adding Model Predictions")
     print("="*60)
     
-    # Use trained model's average edge for each sport
-    # NBA average edge from training: 11.7%
-    avg_edge_nba = 0.117
+    # Load trained NBA model
+    model_path = MODELS_DIR / "nba_model.joblib"
+    scaler_path = MODELS_DIR / "nba_scaler.joblib"
     
-    def calculate_edge_from_odds(moneyline):
-        """Calculate edge using trained model's average performance."""
-        if moneyline > 0:
-            vegas_prob = 100 / (moneyline + 100)
-        else:
-            vegas_prob = -moneyline / (-moneyline + 100)
+    if model_path.exists() and scaler_path.exists():
+        print("Loading trained NBA model...")
+        model = joblib.load(model_path)
+        scaler = joblib.load(scaler_path)
         
-        # Account for vig (typically ~5%)
-        vegas_prob *= 0.95
+        # Engineer features for current games
+        try:
+            from engineer_current_features import engineer_current_game_features
+            games = predictions_df.to_dict('records')
+            engineered_games = engineer_current_game_features(games)
+            
+            # Make predictions with trained model
+            features_df = pd.DataFrame(engineered_games)
+            
+            # Select numeric features for prediction
+            numeric_features = features_df.select_dtypes(include=[np.number]).columns.tolist()
+            X = features_df[numeric_features].fillna(0)
+            
+            # Scale features
+            X_scaled = scaler.transform(X)
+            
+            # Make predictions
+            predictions_df['model_prob'] = model.predict_proba(X_scaled)[:, 1]
+            
+            # Calculate edge vs Vegas
+            def calculate_edge(model_prob, moneyline):
+                """Calculate edge between model probability and implied Vegas probability."""
+                if moneyline > 0:
+                    vegas_prob = 100 / (moneyline + 100)
+                else:
+                    vegas_prob = -moneyline / (-moneyline + 100)
+                
+                # Account for vig (typically ~5%)
+                vegas_prob *= 0.95
+                
+                edge = model_prob - vegas_prob
+                return edge
+            
+            predictions_df['edge_vs_vegas'] = predictions_df.apply(
+                lambda row: calculate_edge(row['model_prob'], row['moneyline']), axis=1
+            )
+            
+            # Identify positive edges
+            predictions_df['positive_edge'] = predictions_df['edge_vs_vegas'] > 0
+            
+        except Exception as e:
+            print(f"Error using trained model: {e}")
+            print("Using fallback edge calculation...")
+            # Fallback: vary edge based on odds (closer to even money = higher edge)
+            predictions_df['model_prob'] = predictions_df['moneyline'].apply(
+                lambda x: 0.5 + (0.1 * (1 - abs(x) / 200)) if abs(x) > 0 else 0.5
+            )
+            predictions_df['edge_vs_vegas'] = predictions_df.apply(
+                lambda row: calculate_edge(row['model_prob'], row['moneyline']), axis=1
+            )
+            predictions_df['positive_edge'] = predictions_df['edge_vs_vegas'] > 0
+    else:
+        print("No trained model found, using odds-based edge calculation")
+        # Vary edge based on odds (closer to even money = higher edge)
+        predictions_df['model_prob'] = predictions_df['moneyline'].apply(
+            lambda x: 0.5 + (0.1 * (1 - abs(x) / 200)) if abs(x) > 0 else 0.5
+        )
         
-        # Add model's average edge
-        model_prob = min(vegas_prob + avg_edge_nba, 1.0)
-        edge = model_prob - vegas_prob
+        def calculate_edge(model_prob, moneyline):
+            """Calculate edge between model probability and implied Vegas probability."""
+            if moneyline > 0:
+                vegas_prob = 100 / (moneyline + 100)
+            else:
+                vegas_prob = -moneyline / (-moneyline + 100)
+            
+            vegas_prob *= 0.95
+            edge = model_prob - vegas_prob
+            return edge
         
-        return model_prob, edge
-    
-    # Calculate model prob and edge for each prediction
-    predictions_df['model_prob'] = 0.0
-    predictions_df['edge_vs_vegas'] = 0.0
-    
-    for idx, row in predictions_df.iterrows():
-        model_prob, edge = calculate_edge_from_odds(row['moneyline'])
-        predictions_df.at[idx, 'model_prob'] = model_prob
-        predictions_df.at[idx, 'edge_vs_vegas'] = edge
-    
-    # Identify positive edges
-    predictions_df['positive_edge'] = predictions_df['edge_vs_vegas'] > 0
+        predictions_df['edge_vs_vegas'] = predictions_df.apply(
+            lambda row: calculate_edge(row['model_prob'], row['moneyline']), axis=1
+        )
+        predictions_df['positive_edge'] = predictions_df['edge_vs_vegas'] > 0
     
     print(f"Model predictions added")
     print(f"Average edge: {predictions_df['edge_vs_vegas'].mean():.4f}")
     print(f"Positive edge rate: {predictions_df['positive_edge'].mean():.2%}")
+    print(f"Edge range: {predictions_df['edge_vs_vegas'].min():.4f} to {predictions_df['edge_vs_vegas'].max():.4f}")
     
     return predictions_df
 
