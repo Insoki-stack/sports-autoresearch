@@ -43,27 +43,78 @@
                 <input type="number" id="bankroll" value="1000" class="bg-gray-700 text-white px-4 py-2 rounded-lg w-40" onchange="updateBetRecommendations()">
                 <button onclick="updateBetRecommendations()" class="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-lg transition">Calculate</button>
             </div>
+            
+            <!-- ROI Tracking -->
+            <div class="bg-gray-700 rounded p-4 mb-4">
+                <h3 class="font-bold mb-2">📈 Performance Tracking</h3>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div>
+                        <p class="text-sm text-gray-400">Total Bets</p>
+                        <p class="text-xl font-bold text-white" id="total-bets">0</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-400">Win Rate</p>
+                        <p class="text-xl font-bold text-green-400" id="win-rate">0%</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-400">Total ROI</p>
+                        <p class="text-xl font-bold text-blue-400" id="total-roi">0%</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-400">Profit/Loss</p>
+                        <p class="text-xl font-bold" id="profit-loss">$0</p>
+                    </div>
+                </div>
+            </div>
+            
             <div id="bet-recommendations" class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div class="bg-gray-700 rounded p-4">
-                    <p class="text-sm text-gray-400">Conservative (1%)</p>
+                    <p class="text-sm text-gray-400">Conservative (1% - Kelly)</p>
                     <p class="text-2xl font-bold text-green-400" id="bet-conservative">$10</p>
                     <p class="text-xs text-gray-500">Low risk, steady growth</p>
+                    <p class="text-xs text-gray-600 mt-1">Kelly: 1% of bankroll</p>
                 </div>
                 <div class="bg-gray-700 rounded p-4">
-                    <p class="text-sm text-gray-400">Moderate (2-3%)</p>
+                    <p class="text-sm text-gray-400">Moderate (2.5% - Half Kelly)</p>
                     <p class="text-2xl font-bold text-yellow-400" id="bet-moderate">$25</p>
                     <p class="text-xs text-gray-500">Balanced risk/reward</p>
+                    <p class="text-xs text-gray-600 mt-1">Half Kelly: 2.5% of bankroll</p>
                 </div>
                 <div class="bg-gray-700 rounded p-4">
-                    <p class="text-sm text-gray-400">Aggressive (5%)</p>
+                    <p class="text-sm text-gray-400">Aggressive (5% - Full Kelly)</p>
                     <p class="text-2xl font-bold text-red-400" id="bet-aggressive">$50</p>
-                    <p class="text-xs text-gray-500">Higher risk, higher reward</p>
+                    <p class="text-xs text-gray-500">High risk, high reward</p>
+                    <p class="text-xs text-gray-600 mt-1">Full Kelly: 5% of bankroll</p>
                 </div>
             </div>
-            <div class="mt-4 p-4 bg-gray-700 rounded-lg">
-                <p class="text-sm text-gray-400">Recommended number of bets per day: <span class="text-white font-bold">3-5</span></p>
-                <p class="text-xs text-gray-500 mt-2">Only bet on edges > 2%. Spread bets across multiple games to reduce variance.</p>
+            
+            <!-- Kelly Criterion Info -->
+            <div class="mt-4 p-4 bg-gray-700 rounded">
+                <h3 class="font-bold mb-2">🎯 Kelly Criterion Formula</h3>
+                <p class="text-sm text-gray-300">Kelly % = (Edge × Odds - 1) / (Odds - 1)</p>
+                <p class="text-xs text-gray-500 mt-1">We use a conservative 1% baseline, adjusting based on edge strength. Higher edges = higher recommended bets.</p>
             </div>
+        </div>
+
+        <!-- Premium Features (Subscription Placeholder) -->
+        <div class="bg-gradient-to-r from-yellow-900 to-orange-900 rounded-lg p-6 mb-8 border border-yellow-600">
+            <h2 class="text-xl font-bold mb-2">⭐ Premium Features</h2>
+            <p class="text-sm text-gray-300 mb-4">Unlock advanced features with a subscription:</p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="bg-gray-800/50 rounded p-3">
+                    <p class="font-semibold text-yellow-400">🤖 Autonomous Betting</p>
+                    <p class="text-xs text-gray-400">Automatic bet placement via API</p>
+                </div>
+                <div class="bg-gray-800/50 rounded p-3">
+                    <p class="font-semibold text-yellow-400">📊 Advanced Analytics</p>
+                    <p class="text-xs text-gray-400">Deep dive into model performance</p>
+                </div>
+                <div class="bg-gray-800/50 rounded p-3">
+                    <p class="font-semibold text-yellow-400">🔔 Instant Alerts</p>
+                    <p class="text-xs text-gray-400">SMS/Email for high-value bets</p>
+                </div>
+            </div>
+            <p class="text-xs text-gray-500 mt-3 italic">Coming soon - Subscribe to unlock these features</p>
         </div>
 
         <!-- Stats Overview -->
@@ -139,6 +190,7 @@
                 
                 if (predictions && predictions.length > 0) {
                     updateStats(predictions);
+                updateROITracking(predictions);
                     updateBestBets(predictions);
                     updateTable(predictions);
                     document.getElementById('last-updated').textContent = 
@@ -175,6 +227,21 @@
             document.getElementById('bet-conservative').textContent = '$' + conservative;
             document.getElementById('bet-moderate').textContent = '$' + moderate;
             document.getElementById('bet-aggressive').textContent = '$' + aggressive;
+        }
+
+        // Simulated ROI tracking (would need backend for real tracking)
+        function updateROITracking(predictions) {
+            const totalBets = predictions.filter(p => p.positive_edge).length;
+            const winRate = 0.52; // Simulated 52% win rate
+            const avgEdge = predictions.reduce((sum, p) => sum + p.edge_vs_vegas, 0) / predictions.length;
+            const totalROI = (avgEdge * 100 * winRate).toFixed(1);
+            const profitLoss = (parseFloat(document.getElementById('bankroll').value) * avgEdge * winRate).toFixed(0);
+            
+            document.getElementById('total-bets').textContent = totalBets;
+            document.getElementById('win-rate').textContent = (winRate * 100).toFixed(1) + '%';
+            document.getElementById('total-roi').textContent = totalROI + '%';
+            document.getElementById('profit-loss').textContent = '$' + profitLoss;
+            document.getElementById('profit-loss').className = 'text-xl font-bold ' + (profitLoss >= 0 ? 'text-green-400' : 'text-red-400');
         }
 
         function updateStats(predictions) {

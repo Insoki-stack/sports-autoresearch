@@ -132,6 +132,30 @@ class TennisModel(SportsBettingModel):
             "max_depth": 6,
         })
 
+class SoccerModel(SportsBettingModel):
+    """Soccer-specific betting model."""
+    
+    def __init__(self):
+        super().__init__("soccer")
+        # Soccer-specific hyperparameters
+        self.params.update({
+            "n_estimators": 250,
+            "max_depth": 7,
+            "learning_rate": 0.05,
+        })
+
+class NHLModel(SportsBettingModel):
+    """NHL-specific betting model."""
+    
+    def __init__(self):
+        super().__init__("nhl")
+        # NHL-specific hyperparameters
+        self.params.update({
+            "n_estimators": 200,
+            "max_depth": 6,
+            "learning_rate": 0.05,
+        })
+
 # ==============================================================================
 # TRAINING LOOP - CASCADE SHOULD NOT MODIFY TIME BUDGET
 # ==============================================================================

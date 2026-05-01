@@ -47,7 +47,23 @@ SPORTS_CONFIG = {
     },
     "tennis": {
         "name": "Tennis",
-        "api_base": None,  # Will use historical datasets
+        "api_base": "https://api.tennis.com",
+        "time_budget_seconds": 300,
+        "train_split": 0.8,
+        "val_split": 0.1,
+        "test_split": 0.1,
+    },
+    "soccer": {
+        "name": "Soccer",
+        "api_base": "https://api.football-data.org",
+        "time_budget_seconds": 300,
+        "train_split": 0.8,
+        "val_split": 0.1,
+        "test_split": 0.1,
+    },
+    "nhl": {
+        "name": "NHL",
+        "api_base": "https://api.nhl.com",
         "time_budget_seconds": 300,
         "train_split": 0.8,
         "val_split": 0.1,
