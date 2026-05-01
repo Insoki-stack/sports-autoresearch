@@ -88,8 +88,9 @@ class MLBModel(SportsBettingModel):
         super().__init__("mlb")
         # MLB-specific hyperparameters
         self.params.update({
-            "n_estimators": 150,
+            "n_estimators": 200,  # Increased from 150
             "max_depth": 8,
+            "learning_rate": 0.05,  # Lower learning rate
         })
 
 class NBAModel(SportsBettingModel):
