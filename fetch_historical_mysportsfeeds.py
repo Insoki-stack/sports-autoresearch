@@ -7,11 +7,10 @@ import requests
 import pandas as pd
 from pathlib import Path
 import time
+from requests.auth import HTTPBasicAuth
 
 # MySportsFeeds API configuration
-# Get free API key from: https://www.mysportsfeeds.com/login1/
-# Free tier available for personal/private use
-MSF_API_KEY = "YOUR_API_KEY"  # Replace with your actual API key
+MSF_API_KEY = "bac042fd-432a-469e-9ad8-bef154"
 MSF_API_VERSION = "v3.1"
 MSF_BASE_URL = f"https://api.mysportsfeeds.com/{MSF_API_VERSION}"
 
@@ -21,10 +20,10 @@ CACHE_DIR.mkdir(parents=True, exist_ok=True)
 def fetch_nba_games(season="2024-regular"):
     """Fetch NBA games for a specific season."""
     url = f"{MSF_BASE_URL}/pull/nba/{season}/games.json"
-    headers = {"Authorization": f"Bearer {MSF_API_KEY}"}
+    auth = HTTPBasicAuth(MSF_API_KEY, "MYSPORTSFEEDS")
     
     try:
-        response = requests.get(url, headers=headers)
+        response = requests.get(url, auth=auth)
         if response.status_code == 200:
             data = response.json()
             games = data.get('games', [])
@@ -40,10 +39,10 @@ def fetch_nba_games(season="2024-regular"):
 def fetch_nhl_games(season="2024-regular"):
     """Fetch NHL games for a specific season."""
     url = f"{MSF_BASE_URL}/pull/nhl/{season}/games.json"
-    headers = {"Authorization": f"Bearer {MSF_API_KEY}"}
+    auth = HTTPBasicAuth(MSF_API_KEY, "MYSPORTSFEEDS")
     
     try:
-        response = requests.get(url, headers=headers)
+        response = requests.get(url, auth=auth)
         if response.status_code == 200:
             data = response.json()
             games = data.get('games', [])
@@ -59,10 +58,10 @@ def fetch_nhl_games(season="2024-regular"):
 def fetch_mlb_games(season="2024-regular"):
     """Fetch MLB games for a specific season."""
     url = f"{MSF_BASE_URL}/pull/mlb/{season}/games.json"
-    headers = {"Authorization": f"Bearer {MSF_API_KEY}"}
+    auth = HTTPBasicAuth(MSF_API_KEY, "MYSPORTSFEEDS")
     
     try:
-        response = requests.get(url, headers=headers)
+        response = requests.get(url, auth=auth)
         if response.status_code == 200:
             data = response.json()
             games = data.get('games', [])

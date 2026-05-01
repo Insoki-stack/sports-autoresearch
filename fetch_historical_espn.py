@@ -109,47 +109,6 @@ def main():
             save_sport_data("mlb", mlb_games)
         
         time.sleep(2)
-        
-        # Soccer
-        soccer_games = fetch_soccer_games(season=season)
-        if soccer_games:
-            save_sport_data("soccer", soccer_games)
-        
-        time.sleep(2)
-
-if __name__ == "__main__":
-    main()
-        time.sleep(2)
-        
-        # NHL
-        nhl_games = fetch_nhl_games(season)
-        if nhl_games:
-            save_sport_data("nhl", nhl_games)
-        
-        time.sleep(2)
-        
-        # MLB
-        mlb_games = fetch_mlb_games(season)
-        if mlb_games:
-            save_sport_data("mlb", mlb_games)
-        
-        time.sleep(2)
-
-if __name__ == "__main__":
-    main()
-        # NHL
-        nhl_games = fetch_nhl_games(season)
-        if nhl_games:
-            save_sport_data("nhl", nhl_games)
-        
-        time.sleep(2)
-        
-        # MLB
-        mlb_games = fetch_mlb_games(season)
-        if mlb_games:
-            save_sport_data("mlb", mlb_games)
-        
-        time.sleep(2)
 
 if __name__ == "__main__":
     main()
