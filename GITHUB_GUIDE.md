@@ -118,7 +118,7 @@ git push -u origin main
 
 ## Step 7: Verify Your Code is on GitHub
 
-1. Go to https://github.com/YOUR_USERNAME/sports-autoresearch
+1. Go to https://github.com/YOUR_USERNAME/sports-autoresearch (e.g., https://github.com/Insoki-stack/sports-autoresearch)
 2. You should see all your files there!
 3. Success! Your code is now on GitHub.
 

@@ -239,22 +239,8 @@ def train_all_sports():
     sports = ['mlb', 'nba', 'golf', 'tennis']
     
     for sport in sports:
-        print(f"\n============================================================")
-        print(f"Training {sport.upper()} model")
-        print(f"============================================================")
-        
         try:
-            model_classes = {
-                'mlb': MLBModel,
-                'nba': NBAModel,
-                'golf': GolfModel,
-                'tennis': TennisModel
-            }
-            
-            if sport in model_classes:
-                model = model_classes[sport]()
-                model.train()
-                model.evaluate()
+            train_sport_model(sport, time_budget=300)
         except Exception as e:
             print(f"Error training {sport}: {e}")
     
