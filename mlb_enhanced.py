@@ -10,7 +10,7 @@ from datetime import datetime
 import json
 
 CACHE_DIR = Path.home() / ".cache" / "sports-autoresearch"
-ODDS_API_KEY = "da6e9aec8a38554193953371d6a8dca5"
+ODDS_API_KEY = "45ecd4cd0e72191368626c8f3756ab63"
 ODDS_API_BASE_URL = "https://api.the-odds-api.com/v4"
 
 # Ballpark characteristics (dimensions, altitude, park factors)

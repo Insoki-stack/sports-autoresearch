@@ -8,7 +8,7 @@ import pandas as pd
 from pathlib import Path
 
 CACHE_DIR = Path.home() / ".cache" / "sports-autoresearch"
-ODDS_API_KEY = "da6e9aec8a38554193953371d6a8dca5"
+ODDS_API_KEY = "45ecd4cd0e72191368626c8f3756ab63"
 ODDS_API_BASE_URL = "https://api.the-odds-api.com/v4"
 
 SPORTS_CONFIG = {
@@ -50,6 +50,14 @@ def get_mlb_prediction(team_name, odds):
     edge = model_prob - vegas_prob
     
     return model_prob, edge
+
+def get_enhanced_mlb_prediction(game_data, odds):
+    """
+    Enhanced MLB prediction using contextual data.
+    Uses ballpark, weather, and umpire data to improve predictions.
+    """
+    from mlb_enhanced import get_enhanced_mlb_prediction as enhanced_pred
+    return enhanced_pred(game_data, odds)
 
 def get_soccer_prediction(team_name, odds):
     """Get prediction for soccer - edge varies by odds."""
