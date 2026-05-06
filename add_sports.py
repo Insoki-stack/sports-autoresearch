@@ -135,27 +135,38 @@ def fetch_mlb_odds():
                     markets = bookmaker.get('markets', [])
                     
                     for market in markets:
-                        if market.get('key') == 'h2h':
-                            outcomes = market.get('outcomes', [])
-                            for outcome in outcomes:
-                                team_name = outcome.get('name', '')
-                                price = outcome.get('price', 0)
-                                
-                                model_prob, edge = get_mlb_prediction(team_name, price)
-                                
-                                prediction = {
-                                    'away_team': away_team,
-                                    'home_team': home_team,
-                                    'team': team_name,
-                                    'moneyline': price,
-                                    'model_prob': model_prob,
-                                    'edge_vs_vegas': edge,
-                                    'positive_edge': edge > 0,
-                                    'bookmaker': bookmaker_name,
-                                    'sport': 'mlb'
-                                }
-                                
-                                predictions.append(prediction)
+                        market_key = market.get('key', '')
+                        outcomes = market.get('outcomes', [])
+                        
+                        for outcome in outcomes:
+                            team_name = outcome.get('name', '')
+                            price = outcome.get('price', 0)
+                            point = outcome.get('point', 0)
+                            
+                            # Determine bet type
+                            bet_type = 'moneyline'
+                            if market_key == 'spreads':
+                                bet_type = 'spread'
+                            elif market_key == 'totals':
+                                bet_type = 'total'
+                            
+                            model_prob, edge = get_mlb_prediction(team_name, price)
+                            
+                            prediction = {
+                                'away_team': away_team,
+                                'home_team': home_team,
+                                'team': team_name,
+                                'moneyline': price,
+                                'point': point,
+                                'bet_type': bet_type,
+                                'model_prob': model_prob,
+                                'edge_vs_vegas': edge,
+                                'positive_edge': edge > 0,
+                                'bookmaker': bookmaker_name,
+                                'sport': 'mlb'
+                            }
+                            
+                            predictions.append(prediction)
             
             df = pd.DataFrame(predictions)
             output_file = CACHE_DIR / "mlb_predictions_current.csv"
